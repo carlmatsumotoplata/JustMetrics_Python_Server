@@ -18,28 +18,31 @@ def a2():
 def a1():
     json = request.json
     # print("request data", json)
-    CPUdata=json['data'][0]['CPUUtilization']
-    print('cpudata', CPUdata)
+    CPUdata = json["data"][0]["CPUUtilization"]
+    print("cpudata", CPUdata)
     if not CPUdata:
         return jsonify({"error": "Missing or invalid data"}), 400
-    df = pd.DataFrame({
-    "ds": pd.to_datetime(pd.Series(CPUdata['Timestamps']), utc=True).dt.tz_convert(None),
-    "y": CPUdata['Values']
-    })
+    df = pd.DataFrame(
+        {
+            "ds": pd.to_datetime(
+                pd.Series(CPUdata["Timestamps"]), utc=True
+            ).dt.tz_convert(None),
+            "y": CPUdata["Values"],
+        }
+    )
     model = Prophet(interval_width=0.95)
     model.fit(df)
 
-    future = model.make_future_dataframe(periods=60, freq='10min')
+    future = model.make_future_dataframe(periods=60, freq="10min")
 
     forecast = model.predict(future)
     tail = forecast.tail(20)
 
-        # See forecast
-    res = tail[['ds', 'yhat']]
+    # See forecast
+    res = tail[["ds", "yhat"]]
     res.to_dict(orient="records")
 
-    return jsonify( res.to_dict(orient="records"))
-
+    return jsonify(res.to_dict(orient="records"))
 
 
 if __name__ == "__main__":
